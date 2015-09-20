@@ -1,0 +1,82 @@
+body {
+  color: #444;
+  font-family: 'Lora', serif; }
+
+a:focus,
+a:hover {
+  text-decoration: none; }
+
+.global-wrapper {
+  margin: 0 auto;
+  width: 960px; }
+
+.issues__item {
+  -moz-box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 5px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 5px;
+  box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 5px;
+  border: 1px solid #d5d5d5;
+  list-style: none;
+  padding: 10px; }
+
+.issues-header {
+  text-align: center; }
+
+.issues__item__title {
+  margin: 0 0 10px;
+  padding: 0; }
+  .issues__item__title a {
+    color: #444;
+    text-decoration: none; }
+    .issues__item__title a:focus, .issues__item__title a:hover {
+      text-decoration: underline; }
+
+.issues__item__labels {
+  margin-bottom: 20px;
+  padding: 0; }
+
+.issues__item__meta {
+  font-size: 12px;
+  margin-bottom: 20px; }
+
+.issues__item__label {
+  display: inline-block; }
+  .issues__item__label a {
+    background: #444;
+    color: #eee;
+    font-size: 12px;
+    padding: 3px 6px;
+    text-decoration: none; }
+    .issues__item__label a:focus, .issues__item__label a:hover {
+      background: #5e5e5e; }
+
+.issues__item__excerpt {
+  font-style: italic; }
+
+.issues-pagination {
+  margin-left: 10px; }
+
+.issues-pagination__page {
+  display: inline-block; }
+  .issues-pagination__page a {
+    text-decoration: none;
+    background: #444;
+    border: 1px solid #444;
+    color: #eee;
+    display: block;
+    padding: 3px;
+    text-align: center;
+    width: 20px; }
+    .issues-pagination__page a:focus, .issues-pagination__page a:hover {
+      text-decoration: underline; }
+    .issues-pagination__page a:focus, .issues-pagination__page a:hover {
+      background: #5e5e5e;
+      text-decoration: none; }
+  .issues-pagination__page--current a {
+    background: none;
+    border: 1px solid #bbbbbb;
+    color: #444; }
+    .issues-pagination__page--current a:focus, .issues-pagination__page--current a:hover {
+      background: none;
+      color: #444; }
+
+/*# sourceMappingURL=main.css.map */

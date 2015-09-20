@@ -1,0 +1,14 @@
+linters:
+
+  ImportPath:
+    leading_underscore: true
+
+  LeadingZero:
+    style: 'include_zero'
+
+  VendorPrefix:
+    exclude:
+      - 'sass/_mixins.scss'
+
+  SelectorFormat:
+    convention: 'hyphenated_BEM'

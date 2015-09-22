@@ -18,7 +18,8 @@
     "rules": {
         "indent": [
             2,
-            2
+            2,
+            {"VariableDeclarator": 2}
         ],
         "quotes": [
             2,
@@ -40,7 +41,7 @@
         "react/jsx-boolean-value": 1,
         "react/jsx-closing-bracket-location": 0,
         "react/jsx-curly-spacing": [1, "always"],
-        "react/jsx-indent-props": 1,
+        "react/jsx-indent-props": 0,
         "react/jsx-max-props-per-line": [1, { "maximum": 3 }],
         "react/jsx-no-duplicate-props": 1,
         "react/jsx-no-literals": 0,
@@ -49,7 +50,7 @@
         "react/jsx-sort-props": 0,
         "react/jsx-uses-react": 1,
         "react/jsx-uses-vars": 1,
-        "react/no-danger": 1,
+        "react/no-danger": 0,
         "react/no-did-mount-set-state": 1,
         "react/no-did-update-set-state": 1,
         "react/no-multi-comp": 1,

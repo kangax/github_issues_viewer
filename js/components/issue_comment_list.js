@@ -3,7 +3,8 @@ var IssueCommentList = React.createClass({
   displayName: 'IssueCommentList',
 
   propTypes: {
-    comments: React.PropTypes.array
+    comments: React.PropTypes.array,
+    isActive: React.PropTypes.boolean
   },
 
   render: function() {
@@ -25,7 +26,7 @@ var IssueCommentList = React.createClass({
     }
     return (
       <div className="issue__comments-wrapper"
-           style={{ display: this.props.isActive() ? '' : 'none' }}>
+           style={ {display: this.props.isActive() ? '' : 'none'} }>
         <h2 className="issue__comments__header">
           Comments
         </h2>

@@ -54,10 +54,11 @@ var IssueList = React.createClass({
     return (
       <div className="global-wrapper">
         <h2 className="issues-header">Issues viewer</h2>
-        <div className="back"
-             style={{ display: this.state.currentIssue ? '' : 'none' }}
-             onClick={ this.handleBackClick }>
-          <a href="#">← Back to issues</a>
+        <div
+          className="back"
+          style={ {'display': this.state.currentIssue ? '' : 'none'} }
+          onClick={ this.handleBackClick }>
+            <a href="#">← Back to issues</a>
         </div>
         <ul className="issues">
           { issues }

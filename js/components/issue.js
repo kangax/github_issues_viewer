@@ -6,10 +6,10 @@ var Issue = React.createClass({
 
   displayName: 'Issue',
 
-  EXCERPT_LENGTH: 140,
-
   propTypes: {
     body: React.PropTypes.string,
+    comments: React.PropTypes.number,
+    comments_url: React.PropTypes.string,
     currentIssue: React.PropTypes.object,
     handleClick: React.PropTypes.function,
     id: React.PropTypes.number.isRequired,
@@ -24,6 +24,8 @@ var Issue = React.createClass({
       comments: [ ]
     };
   },
+
+  EXCERPT_LENGTH: 140,
 
   getSummary: function() {
     var body = this.props.body,
@@ -90,9 +92,7 @@ var Issue = React.createClass({
 
         <div
           className="issues__item__summary"
-          dangerouslySetInnerHTML={{
-            __html: this.getSummary()
-          }} />
+          dangerouslySetInnerHTML={ { __html: this.getSummary() } } />
 
         <IssueCommentList comments={ this.state.comments } isActive={ this.isActive } />
 

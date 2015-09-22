@@ -21,8 +21,7 @@ var Issue = React.createClass({
 
   getInitialState: function() {
     return {
-      comments: [ ],
-      isActive: false
+      comments: [ ]
     };
   },
 
@@ -36,11 +35,17 @@ var Issue = React.createClass({
 
   handleClick: function() {
     this.props.handleClick(this);
-    this.setState({ isActive: true });
-    // if (this.props.comments > 0) {
-    //   console.log('ready to fetch comments', this.props.comments_url);
-    // }
+    if (this.props.comments > 0) {
+      this.fetchComments();
+    }
     return false;
+  },
+
+  fetchComments: function() {
+    var _this = this;
+    $.get(this.props.comments_url, function(comments) {
+      _this.setState({ comments: comments });
+    });
   },
 
   isActive: function() {
@@ -89,7 +94,7 @@ var Issue = React.createClass({
             __html: this.getSummary()
           }} />
 
-        <IssueCommentList comments={this.state.comments} />
+        <IssueCommentList comments={ this.state.comments } isActive={ this.isActive } />
 
       </li>
     );

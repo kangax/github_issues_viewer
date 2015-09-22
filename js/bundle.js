@@ -22,8 +22,7 @@ var Issue = React.createClass({
 
   getInitialState: function() {
     return {
-      comments: [ ],
-      isActive: false
+      comments: [ ]
     };
   },
 
@@ -37,11 +36,17 @@ var Issue = React.createClass({
 
   handleClick: function() {
     this.props.handleClick(this);
-    this.setState({ isActive: true });
-    // if (this.props.comments > 0) {
-    //   console.log('ready to fetch comments', this.props.comments_url);
-    // }
+    if (this.props.comments > 0) {
+      this.fetchComments();
+    }
     return false;
+  },
+
+  fetchComments: function() {
+    var _this = this;
+    $.get(this.props.comments_url, function(comments) {
+      _this.setState({ comments: comments });
+    });
   },
 
   isActive: function() {
@@ -90,7 +95,7 @@ var Issue = React.createClass({
             __html: this.getSummary()
           }}), 
 
-        React.createElement(IssueCommentList, {comments: this.state.comments})
+        React.createElement(IssueCommentList, {comments:  this.state.comments, isActive:  this.isActive})
 
       )
     );
@@ -113,7 +118,11 @@ var IssueCommentList = React.createClass({
       return (
         React.createElement("li", {className: "issue__comment"}, 
           React.createElement("div", {className: "issue__comment__header"}, 
-            React.createElement("a", {href: "#"},  comment.user)
+            React.createElement("img", {className: "issues__item__user-avatar", src:  comment.user.avatar_url}), 
+            React.createElement("a", {href:  comment.user.html_url, className: "issues__item__author"}, 
+               comment.user.login
+            ), 
+            "said:"
           ), 
           React.createElement("div", {className: "issue__comment__body"}, 
              comment.body
@@ -122,8 +131,14 @@ var IssueCommentList = React.createClass({
       );
     }
     return (
-      React.createElement("ul", {className: "issue__comments"}, 
-         this.props.comments.map(createComment) 
+      React.createElement("div", {className: "issue__comments-wrapper", 
+           style: { display: this.props.isActive() ? '' : 'none'}}, 
+        React.createElement("h2", {className: "issue__comments__header"}, 
+          "Comments"
+        ), 
+        React.createElement("ul", {className: "issue__comments"}, 
+           this.props.comments.map(createComment) 
+        )
       )
     );
   }

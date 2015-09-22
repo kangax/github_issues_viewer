@@ -159,8 +159,32 @@
   }
 }
 
-.issue__comment:first-child {
-  border-top: 1px dashed $dark-color;
+.issue__comments-wrapper {
+  margin: 0 10px;
+  font-size: $medium-font-size;
+}
+
+.issue__comments {
+  padding-left: 0;
+}
+
+.issue__comments__header {
+  border-bottom: 1px dotted $dark-color;
+  padding-bottom: 5px;
+}
+
+.issue__comment {
+  list-style: none;
+  line-height: 1.4;
+  margin-bottom: 20px;
+
+  .issues__item__user-avatar {
+    margin-left: 0;
+  }
+
+  .issues__item__author {
+    margin-right: 10px;
+  }
 }
 
 .issue__comment__body {

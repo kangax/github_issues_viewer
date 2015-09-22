@@ -1,4 +1,246 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var LabelList = require('./label_list.js');
+var IssueCommentList = require('./issue_comment_list.js');
+var marked = require('marked');
+
+var Issue = React.createClass({
+
+  displayName: 'Issue',
+
+  EXCERPT_LENGTH: 140,
+
+  propTypes: {
+    body: React.PropTypes.string,
+    currentIssue: React.PropTypes.object,
+    handleClick: React.PropTypes.function,
+    id: React.PropTypes.number.isRequired,
+    labels: React.PropTypes.array,
+    number: React.PropTypes.number,
+    title: React.PropTypes.string.isRequired,
+    user: React.PropTypes.object
+  },
+
+  getInitialState: function() {
+    return {
+      comments: [ ],
+      isActive: false
+    };
+  },
+
+  getSummary: function() {
+    var body = this.props.body,
+        parsed = marked(body, { sanitize: true }),
+        excerpt = body.slice(0, 140) + (body.length > this.EXCERPT_LENGTH ? '…' : '');
+
+    return this.isActive() ? parsed : excerpt;
+  },
+
+  handleClick: function() {
+    this.props.handleClick(this);
+    this.setState({ isActive: true });
+    // if (this.props.comments > 0) {
+    //   console.log('ready to fetch comments', this.props.comments_url);
+    // }
+    return false;
+  },
+
+  isActive: function() {
+    return this.props.currentIssue === this;
+  },
+
+  shouldDisplay: function() {
+    return this.props.currentIssue === null ||
+           this.props.currentIssue === this;
+  },
+
+  render: function() {
+
+    var issueClasses = React.addons.classSet({
+      'issues__item': true,
+      'issues__item--current': this.isActive(),
+      'issues__item--hidden': !this.shouldDisplay()
+    });
+
+    return (
+      React.createElement("li", {className:  issueClasses, 
+          "data-issue-id":  this.props.id}, 
+
+        React.createElement("h3", {className: "issues__item__title"}, 
+          React.createElement("a", {href: "#", onClick:  this.handleClick}, 
+             this.props.title
+          )
+        ), 
+
+        React.createElement("div", {className: "issues__item__meta"}, 
+          React.createElement("span", {className: "issues__item__number"}, 
+            "#",  this.props.number
+          ), 
+          "opened by", 
+          React.createElement("img", {className: "issues__item__user-avatar", src:  this.props.user.avatar_url}), 
+          React.createElement("a", {href:  this.props.user.html_url, className: "issues__item__author"}, 
+             this.props.user.login
+          )
+        ), 
+
+        React.createElement(LabelList, {labels:  this.props.labels}), 
+
+        React.createElement("div", {
+          className: "issues__item__summary", 
+          dangerouslySetInnerHTML: {
+            __html: this.getSummary()
+          }}), 
+
+        React.createElement(IssueCommentList, {comments: this.state.comments})
+
+      )
+    );
+  }
+});
+
+module.exports = Issue;
+
+},{"./issue_comment_list.js":2,"./label_list.js":4,"marked":6}],2:[function(require,module,exports){
+var IssueCommentList = React.createClass({
+
+  displayName: 'IssueCommentList',
+
+  propTypes: {
+    comments: React.PropTypes.array
+  },
+
+  render: function() {
+    function createComment(comment) {
+      return (
+        React.createElement("li", {className: "issue__comment"}, 
+          React.createElement("div", {className: "issue__comment__header"}, 
+            React.createElement("a", {href: "#"},  comment.user)
+          ), 
+          React.createElement("div", {className: "issue__comment__body"}, 
+             comment.body
+          )
+        )
+      );
+    }
+    return (
+      React.createElement("ul", {className: "issue__comments"}, 
+         this.props.comments.map(createComment) 
+      )
+    );
+  }
+});
+
+module.exports = IssueCommentList;
+
+},{}],3:[function(require,module,exports){
+var Issue = require('./issue.js');
+
+var IssueList = React.createClass({
+
+  displayName: 'IssueList',
+
+  propTypes: {
+    url: React.PropTypes.string
+  },
+
+  getInitialState: function() {
+    return {
+      issues: [ ],
+      currentIssue: null
+    };
+  },
+
+  componentDidMount: function() {
+    $.ajax({
+      url: this.props.url,
+      dataType: 'json',
+      cache: false,
+      success: this.onDataReceived.bind(this),
+      error: this.onDataFailed.bind(this)
+    });
+  },
+
+  onDataReceived: function(data) {
+    this.setState({ issues: data });
+  },
+
+  onDataFailed: function(xhr, status, err) {
+    console.error(this.props.url, status, err.toString());
+  },
+
+  handleIssueClick: function(issue) {
+    this.setState({ currentIssue: issue });
+  },
+
+  handleBackClick: function() {
+    this.setState({ currentIssue: null });
+    return false;
+  },
+
+  render: function() {
+    var issues = this.state.issues.map(function(issue) {
+      return (
+        React.createElement(Issue, React.__spread({},  issue, 
+            {currentIssue:  this.state.currentIssue, 
+            handleClick:  this.handleIssueClick.bind(this) }))
+      );
+    }, this);
+
+    return (
+      React.createElement("div", {className: "global-wrapper"}, 
+        React.createElement("h2", {className: "issues-header"}, "Issues viewer"), 
+        React.createElement("div", {className: "back", 
+             style: { display: this.state.currentIssue ? '' : 'none'}, 
+             onClick:  this.handleBackClick}, 
+          React.createElement("a", {href: "#"}, "← Back to issues")
+        ), 
+        React.createElement("ul", {className: "issues"}, 
+           issues 
+        )
+      )
+    );
+  }
+});
+
+module.exports = IssueList;
+
+},{"./issue.js":1}],4:[function(require,module,exports){
+var LabelList = React.createClass({
+
+  displayName: 'LabelList',
+
+  propTypes: {
+    labels: React.PropTypes.array
+  },
+
+  render: function() {
+    function createLabel(label) {
+      return (
+        React.createElement("li", {className: "issues__item__label"}, 
+          React.createElement("a", {href:  label.url}, 
+             label.name
+          )
+        )
+      );
+    }
+    return (
+      React.createElement("ul", {className: "issues__item__labels"}, 
+         this.props.labels.map(createLabel) 
+      )
+    );
+  }
+});
+
+module.exports = LabelList;
+
+},{}],5:[function(require,module,exports){
+var IssueList = require('./components/issue_list.js');
+
+$(function() {
+  React.render(React.createElement(IssueList, {url: "https://api.github.com/repos/npm/npm/issues"}),
+    document.body);
+});
+
+},{"./components/issue_list.js":3}],6:[function(require,module,exports){
 (function (global){
 /**
  * marked - a markdown parser
@@ -1287,248 +1529,4 @@ if (typeof module !== 'undefined' && typeof exports === 'object') {
 }());
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],2:[function(require,module,exports){
-var LabelList = require('./label_list.js');
-var IssueCommentList = require('./issue_comment_list.js');
-var marked = require('marked');
-
-console.log(marked);
-
-var Issue = React.createClass({
-
-  displayName: 'Issue',
-
-  EXCERPT_LENGTH: 140,
-
-  propTypes: {
-    body: React.PropTypes.string,
-    currentIssue: React.PropTypes.object,
-    handleClick: React.PropTypes.function,
-    id: React.PropTypes.number.isRequired,
-    labels: React.PropTypes.array,
-    number: React.PropTypes.number,
-    title: React.PropTypes.string.isRequired,
-    user: React.PropTypes.object
-  },
-
-  getInitialState: function() {
-    return {
-      comments: [ ],
-      isActive: false
-    };
-  },
-
-  getSummary: function() {
-    var body = this.props.body,
-        parsed = marked(body, { sanitize: true }),
-        excerpt = body.slice(0, 140) + (body.length > this.EXCERPT_LENGTH ? '…' : '');
-
-    return this.isActive() ? parsed : excerpt;
-  },
-
-  handleClick: function() {
-    this.props.handleClick(this);
-    this.setState({ isActive: true });
-    // if (this.props.comments > 0) {
-    //   console.log('ready to fetch comments', this.props.comments_url);
-    // }
-    return false;
-  },
-
-  isActive: function() {
-    return this.props.currentIssue === this;
-  },
-
-  shouldDisplay: function() {
-    return this.props.currentIssue === null ||
-           this.props.currentIssue === this;
-  },
-
-  render: function() {
-
-    var issueClasses = React.addons.classSet({
-      'issues__item': true,
-      'issues__item--current': this.isActive(),
-      'issues__item--hidden': !this.shouldDisplay()
-    });
-
-    return (
-      React.createElement("li", {className:  issueClasses, 
-          "data-issue-id":  this.props.id}, 
-
-        React.createElement("h3", {className: "issues__item__title"}, 
-          React.createElement("a", {href: "#", onClick:  this.handleClick}, 
-             this.props.title
-          )
-        ), 
-
-        React.createElement("div", {className: "issues__item__meta"}, 
-          React.createElement("span", {className: "issues__item__number"}, 
-            "#",  this.props.number
-          ), 
-          "opened by", 
-          React.createElement("img", {className: "issues__item__user-avatar", src:  this.props.user.avatar_url}), 
-          React.createElement("a", {href:  this.props.user.html_url, className: "issues__item__author"}, 
-             this.props.user.login
-          )
-        ), 
-
-        React.createElement(LabelList, {labels:  this.props.labels}), 
-
-        React.createElement("div", {
-          className: "issues__item__summary", 
-          dangerouslySetInnerHTML: {
-            __html: this.getSummary()
-          }}), 
-
-        React.createElement(IssueCommentList, {comments: this.state.comments})
-
-      )
-    );
-  }
-});
-
-module.exports = Issue;
-
-},{"./issue_comment_list.js":3,"./label_list.js":5,"marked":1}],3:[function(require,module,exports){
-var IssueCommentList = React.createClass({
-
-  displayName: 'IssueCommentList',
-
-  propTypes: {
-    comments: React.PropTypes.array
-  },
-
-  render: function() {
-    function createComment(comment) {
-      return (
-        React.createElement("li", {className: "issue__comment"}, 
-          React.createElement("div", {className: "issue__comment__header"}, 
-            React.createElement("a", {href: "#"},  comment.user)
-          ), 
-          React.createElement("div", {className: "issue__comment__body"}, 
-             comment.body
-          )
-        )
-      );
-    }
-    return (
-      React.createElement("ul", {className: "issue__comments"}, 
-         this.props.comments.map(createComment) 
-      )
-    );
-  }
-});
-
-module.exports = IssueCommentList;
-
-},{}],4:[function(require,module,exports){
-var Issue = require('./issue.js');
-
-var IssueList = React.createClass({
-
-  displayName: 'IssueList',
-
-  propTypes: {
-    url: React.PropTypes.string
-  },
-
-  getInitialState: function() {
-    return {
-      issues: [ ],
-      currentIssue: null
-    };
-  },
-
-  componentDidMount: function() {
-    $.ajax({
-      url: this.props.url,
-      dataType: 'json',
-      cache: false,
-      success: this.onDataReceived.bind(this),
-      error: this.onDataFailed.bind(this)
-    });
-  },
-
-  onDataReceived: function(data) {
-    this.setState({ issues: data });
-  },
-
-  onDataFailed: function(xhr, status, err) {
-    console.error(this.props.url, status, err.toString());
-  },
-
-  handleIssueClick: function(issue) {
-    this.setState({ currentIssue: issue });
-  },
-
-  handleBackClick: function() {
-    this.setState({ currentIssue: null });
-    return false;
-  },
-
-  render: function() {
-    var issues = this.state.issues.map(function(issue) {
-      return (
-        React.createElement(Issue, React.__spread({},  issue, 
-            {currentIssue:  this.state.currentIssue, 
-            handleClick:  this.handleIssueClick.bind(this) }))
-      );
-    }, this);
-
-    return (
-      React.createElement("div", {className: "global-wrapper"}, 
-        React.createElement("h2", {className: "issues-header"}, "Issues viewer"), 
-        React.createElement("div", {className: "back", 
-             style: { display: this.state.currentIssue ? '' : 'none'}, 
-             onClick:  this.handleBackClick}, 
-          React.createElement("a", {href: "#"}, "← Back to issues")
-        ), 
-        React.createElement("ul", {className: "issues"}, 
-           issues 
-        )
-      )
-    );
-  }
-});
-
-module.exports = IssueList;
-
-},{"./issue.js":2}],5:[function(require,module,exports){
-var LabelList = React.createClass({
-
-  displayName: 'LabelList',
-
-  propTypes: {
-    labels: React.PropTypes.array
-  },
-
-  render: function() {
-    function createLabel(label) {
-      return (
-        React.createElement("li", {className: "issues__item__label"}, 
-          React.createElement("a", {href: "{ label.url }"}, 
-             label.name
-          )
-        )
-      );
-    }
-    return (
-      React.createElement("ul", {className: "issues__item__labels"}, 
-         this.props.labels.map(createLabel) 
-      )
-    );
-  }
-});
-
-module.exports = LabelList;
-
-},{}],6:[function(require,module,exports){
-var IssueList = require('./components/issue_list.js');
-
-$(function() {
-  React.render(React.createElement(IssueList, {url: "https://api.github.com/repos/npm/npm/issues"}),
-    document.body);
-});
-
-},{"./components/issue_list.js":4}]},{},[6]);
+},{}]},{},[5]);

@@ -2,8 +2,6 @@ var LabelList = require('./label_list.js');
 var IssueCommentList = require('./issue_comment_list.js');
 var marked = require('marked');
 
-console.log(marked);
-
 var Issue = React.createClass({
 
   displayName: 'Issue',

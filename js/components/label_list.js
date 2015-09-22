@@ -10,7 +10,7 @@ var LabelList = React.createClass({
     function createLabel(label) {
       return (
         <li className="issues__item__label">
-          <a href="{ label.url }">
+          <a href={ label.url }>
             { label.name }
           </a>
         </li>

@@ -1,0 +1,168 @@
+.issues {
+  padding: 0;
+}
+
+.issues__item {
+  @include box-shadow(rgba(0, 0, 0, 0.1) 2px 2px 5px);
+  border: 1px solid darken($light-color, 10%);
+  list-style: none;
+  margin-bottom: 20px;
+  padding: 10px;
+  position: relative;
+
+  &--current {
+    background: $current-issue-color;
+
+    .issues__item__summary {
+      font-style: normal;
+
+      pre {
+        overflow-x: auto;
+        padding: 5px 10px;
+      }
+    }
+
+    .issue__item__comments {
+      margin-top: 15px;
+      padding-top: 30px;
+    }
+  }
+
+  &--hidden {
+    display: none;
+  }
+}
+
+.issues-header {
+  text-align: center;
+}
+
+.issues__item__title {
+  margin: 0 0 10px;
+  padding: 0;
+
+  a {
+    color: $dark-color;
+    text-decoration: none;
+
+    &:focus,
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.issues__item__labels {
+  position: absolute;
+  top: 10px;
+  right: 5px;
+}
+
+.issues__item__meta {
+  font-size: $small-font-size;
+  margin-bottom: 20px;
+}
+
+.issues__item__label {
+  display: inline-block;
+  margin-right: 5px;
+
+  a {
+    background: $label-color;
+    color: $light-color;
+    font-size: $small-font-size;
+    padding: 3px 6px;
+    text-decoration: none;
+
+    &:focus,
+    &:hover {
+      background: lighten($label-color, 10%);
+    }
+  }
+}
+
+.issues__item__summary {
+  border-top: 1px dotted $dark-color;
+  font-style: italic;
+  font-size: $medium-font-size;
+  line-height: 1.4;
+  overflow: hidden;
+  padding-top: 10px;
+
+  pre {
+    background: $light-color;
+  }
+}
+
+.issues__item__number {
+  margin-right: 5px;
+}
+
+.issues__item__author {
+  margin-left: 5px;
+}
+
+.issues__item__state {
+  @include border-radius(5px);
+  color: $light-color;
+  font-size: $small-font-size;
+  padding: 5px 10px;
+  position: relative;
+  top: -3px;
+}
+
+.issues__item__user-avatar {
+  width: 25px;
+  height: 25px;
+  vertical-align: middle;
+  margin-left: 10px;
+}
+
+// pagination
+.issues-pagination {
+  margin-left: 10px;
+  padding: 0;
+}
+
+.issues-pagination__page {
+  display: inline-block;
+
+  a {
+    @include naked-link();
+    background: $dark-color;
+    border: 1px solid $dark-color;
+    color: $light-color;
+    display: block;
+    padding: 3px;
+    text-align: center;
+    width: 20px;
+
+    &:focus,
+    &:hover {
+      background: lighten($dark-color, 10%);
+      text-decoration: none;
+    }
+  }
+
+  &--current {
+    a {
+      background: none;
+      border: 1px solid darken($light-color, 20%);
+      color: $dark-color;
+
+      &:focus,
+      &:hover {
+        background: none;
+        color: $dark-color;
+      }
+    }
+  }
+}
+
+.issue__comment:first-child {
+  border-top: 1px dashed $dark-color;
+}
+
+.issue__comment__body {
+  margin-top: 10px;
+}

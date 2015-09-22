@@ -8,7 +8,7 @@ linters:
 
   VendorPrefix:
     exclude:
-      - 'sass/_mixins.scss'
+      - '_sass/_mixins.scss'
 
   SelectorFormat:
     convention: 'hyphenated_BEM'

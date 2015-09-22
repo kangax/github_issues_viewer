@@ -1,0 +1,20 @@
+// general
+body {
+  color: $dark-color;
+  font-family: 'Lora', serif;
+}
+
+a:focus,
+a:hover {
+  text-decoration: none;
+}
+
+// site specific
+.global-wrapper {
+  margin: 0 auto;
+  width: $site-width;
+}
+
+pre {
+  margin-bottom: 0;
+}

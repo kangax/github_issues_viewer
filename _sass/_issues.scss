@@ -12,6 +12,7 @@
 
   &--current {
     background: $current-issue-color;
+    padding: 20px;
 
     .issues__item__summary {
       font-style: normal;
@@ -161,7 +162,6 @@
 
 .issue__comments-wrapper {
   font-size: $medium-font-size;
-  margin: 0 10px;
 }
 
 .issue__comments {
@@ -169,8 +169,9 @@
 }
 
 .issue__comments__header {
-  border-bottom: 1px dotted $dark-color;
+  border-top: 1px dotted #444;
   padding-bottom: 5px;
+  padding-top: 15px;
 }
 
 .issue__comment {

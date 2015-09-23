@@ -1,3 +1,4 @@
+var React = require('react');
 var LabelList = require('./label_list.js');
 var IssueCommentList = require('./issue_comment_list.js');
 var marked = require('marked');
@@ -61,11 +62,16 @@ var Issue = React.createClass({
 
   render: function() {
 
-    var issueClasses = React.addons.classSet({
-      'issues__item': true,
-      'issues__item--current': this.isActive(),
-      'issues__item--hidden': !this.shouldDisplay()
-    });
+    // TODO: why doesn't reqire('react/addons') work?!
+    // var issueClasses = React.addons.classSet({
+    //   'issues__item': true,
+    //   'issues__item--current': this.isActive(),
+    //   'issues__item--hidden': !this.shouldDisplay()
+    // });
+
+    var issueClasses = 'issues__item' +
+                       (this.isActive() ? ' issues__item--current' : '') +
+                       (this.shouldDisplay() ? '' : ' issues__item--hidden');
 
     return (
       <li className={ issueClasses }

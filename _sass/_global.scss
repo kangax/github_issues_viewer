@@ -18,3 +18,9 @@ a:hover {
 pre {
   margin-bottom: 0;
 }
+
+.loading-indicator {
+  width: 100%;
+  height: 200px;
+  background: url(/images/loader.gif) center center no-repeat;
+}

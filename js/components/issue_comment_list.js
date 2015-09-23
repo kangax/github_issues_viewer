@@ -1,10 +1,17 @@
+var React = require('react');
+var marked = require('marked');
+
 var IssueCommentList = React.createClass({
 
   displayName: 'IssueCommentList',
 
   propTypes: {
     comments: React.PropTypes.array,
-    isActive: React.PropTypes.boolean
+    isActive: React.PropTypes.function
+  },
+
+  shouldDisplayComments: function() {
+    return this.props.isActive() && this.props.comments.length > 0;
   },
 
   render: function() {
@@ -18,17 +25,17 @@ var IssueCommentList = React.createClass({
             </a>
             said:
           </div>
-          <div className="issue__comment__body">
-            { comment.body }
-          </div>
+          <div className="issue__comment__body"
+               dangerouslySetInnerHTML={ { __html: marked(comment.body, { sanitize: true }) } } />
         </li>
       );
     }
+
     return (
       <div className="issue__comments-wrapper"
-           style={ {display: this.props.isActive() ? '' : 'none'} }>
+           style={ { display: this.shouldDisplayComments() ? '' : 'none' } }>
         <h2 className="issue__comments__header">
-          Comments
+          { this.props.comments.length } comment(s)
         </h2>
         <ul className="issue__comments">
           { this.props.comments.map(createComment) }

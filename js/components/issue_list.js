@@ -1,3 +1,5 @@
+var $ = require('jquery');
+var React = require('react');
 var Issue = require('./issue.js');
 
 var IssueList = React.createClass({
@@ -20,8 +22,8 @@ var IssueList = React.createClass({
       url: this.props.url,
       dataType: 'json',
       cache: false,
-      success: this.onDataReceived.bind(this),
-      error: this.onDataFailed.bind(this)
+      success: this.onDataReceived,
+      error: this.onDataFailed
     });
   },
 
@@ -60,6 +62,8 @@ var IssueList = React.createClass({
           onClick={ this.handleBackClick }>
             <a href="#">← Back to issues</a>
         </div>
+        <div className="loading-indicator"
+             style={ { display: this.state.issues.length > 0 ? 'none' : '' } }></div>
         <ul className="issues">
           { issues }
         </ul>

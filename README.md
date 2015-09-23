@@ -6,6 +6,7 @@
 
     > gem install scss-lint     # install sass linter
     > gem install jekyll        # install server
+    > npm install
 
 ### Running app
 

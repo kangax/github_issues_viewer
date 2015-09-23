@@ -38,17 +38,17 @@ var Issue = React.createClass({
 
   handleClick: function() {
     this.props.handleClick(this);
-    if (this.props.comments > 0) {
-      this.fetchComments();
-    }
+    this.fetchComments();
     return false;
   },
 
   fetchComments: function() {
-    var _this = this;
+    if (this.props.comments === 0 ||
+        this.state.comments.length > 0) return;
+
     $.get(this.props.comments_url, function(comments) {
-      _this.setState({ comments: comments });
-    });
+      this.setState({ comments: comments });
+    }.bind(this));
   },
 
   isActive: function() {

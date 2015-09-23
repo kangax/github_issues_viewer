@@ -39,17 +39,17 @@ var Issue = React.createClass({
 
   handleClick: function() {
     this.props.handleClick(this);
-    if (this.props.comments > 0) {
-      this.fetchComments();
-    }
+    this.fetchComments();
     return false;
   },
 
   fetchComments: function() {
-    var _this = this;
+    if (this.props.comments === 0 ||
+        this.state.comments.length > 0) return;
+
     $.get(this.props.comments_url, function(comments) {
-      _this.setState({ comments: comments });
-    });
+      this.setState({ comments: comments });
+    }.bind(this));
   },
 
   isActive: function() {
@@ -295,6 +295,7 @@ $(function() {
       function openIssue() {
         var issueToOpen = issueList.refs['issue-' + issueId];
         issueList.setState({ currentIssue: issueToOpen });
+        issueToOpen.fetchComments();
       }
 
       if (issueList.state.issues.length === 0) {
@@ -309,7 +310,6 @@ $(function() {
   var issueList = React.render(React.createElement(IssueList, {url: "https://api.github.com/repos/npm/npm/issues"}),
     document.body);
 
-  window.__issueList = issueList;
 });
 
 },{"./components/issue_list.js":3,"./utils.js":6,"jquery":7,"react":162}],6:[function(require,module,exports){

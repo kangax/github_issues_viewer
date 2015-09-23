@@ -17,6 +17,7 @@ $(function() {
       function openIssue() {
         var issueToOpen = issueList.refs['issue-' + issueId];
         issueList.setState({ currentIssue: issueToOpen });
+        issueToOpen.fetchComments();
       }
 
       if (issueList.state.issues.length === 0) {

@@ -2,6 +2,8 @@ var $ = require('jquery');
 var React = require('react');
 var Issue = require('./issue.js');
 
+var utils = require('../utils.js');
+
 var IssueList = React.createClass({
 
   displayName: 'IssueList',
@@ -28,7 +30,9 @@ var IssueList = React.createClass({
   },
 
   onDataReceived: function(data) {
-    this.setState({ issues: data });
+    this.setState({ issues: data }, function() {
+      this.onDataReceivedCallback && this.onDataReceivedCallback();
+    });
   },
 
   onDataFailed: function(xhr, status, err) {
@@ -36,10 +40,12 @@ var IssueList = React.createClass({
   },
 
   handleIssueClick: function(issue) {
+    utils.pushState('#/issues/' + issue.props.id);
     this.setState({ currentIssue: issue });
   },
 
   handleBackClick: function() {
+    utils.pushState('#/issues');
     this.setState({ currentIssue: null });
     return false;
   },
@@ -48,6 +54,7 @@ var IssueList = React.createClass({
     var issues = this.state.issues.map(function(issue) {
       return (
         <Issue {...issue}
+            ref={ 'issue-' + issue.id }
             currentIssue={ this.state.currentIssue }
             handleClick={ this.handleIssueClick.bind(this) } />
       );

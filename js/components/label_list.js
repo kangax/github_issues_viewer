@@ -11,7 +11,7 @@ var LabelList = React.createClass({
   render: function() {
     function createLabel(label) {
       return (
-        <li className="issues__item__label">
+        <li className="issues__item__label" key={ label.name }>
           <a href={ label.url }>
             { label.name }
           </a>

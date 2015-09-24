@@ -12,7 +12,7 @@ var Issue = React.createClass({
     comments: React.PropTypes.number,
     comments_url: React.PropTypes.string,
     currentIssue: React.PropTypes.object,
-    handleClick: React.PropTypes.function,
+    handleClick: React.PropTypes.func,
     id: React.PropTypes.number.isRequired,
     labels: React.PropTypes.array,
     number: React.PropTypes.number,
@@ -36,10 +36,11 @@ var Issue = React.createClass({
     return this.isActive() ? parsed : excerpt;
   },
 
-  handleClick: function() {
+  handleClick: function(e) {
     this.props.handleClick(this);
     this.fetchComments();
-    return false;
+
+    e.preventDefault();
   },
 
   fetchComments: function() {

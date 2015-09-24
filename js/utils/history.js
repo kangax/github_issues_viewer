@@ -11,6 +11,8 @@ function replaceState(url) {
 function initState(url, onChange) {
   var numPopstates = 0;
 
+  if (typeof window === 'undefined') return;
+
   window.onpopstate = function() {
     onChange && onChange();
     numPopstates++;

@@ -2,7 +2,7 @@ var $ = require('jquery');
 var React = require('react');
 var Issue = require('./issue.js');
 
-var utils = require('../utils.js');
+var history = require('../utils/history.js');
 
 var IssueList = React.createClass({
 
@@ -29,7 +29,37 @@ var IssueList = React.createClass({
     });
   },
 
-  onDataReceived: function(data) {
+  openIssue: function(issueId) {
+    var issueToOpen = this.refs['issue-' + issueId];
+    this.setState({ currentIssue: issueToOpen });
+    issueToOpen.fetchComments();
+  },
+
+  getUrlsOfNextAndLastPages: function(jqXHR) {
+
+    var link = jqXHR.getResponseHeader('Link');
+    var pair = link.split(/\s*,\s*/);
+    var reUrl = /^\<([^\>]*)>.*/;
+
+    // parse url out of "<https://api.github.com/repositories/321278/issues?_=1443120446792&page=2>; rel="next""
+    if (/rel="next"/.test(pair[0])) {
+      return {
+        next: pair[0].replace(reUrl, '$1'),
+        last: pair[1].replace(reUrl, '$1')
+      };
+    }
+    else if (/rel="last"/.test(pair[0])) {
+      return {
+        last: pair[0].replace(reUrl, '$1'),
+        next: pair[1].replace(reUrl, '$1')
+      };
+    }
+  },
+
+  onDataReceived: function(data, status, jqXHR) {
+    var urls = this.getUrlsOfNextAndLastPages(jqXHR);
+    console.log(urls.next, urls.last);
+
     this.setState({ issues: data }, function() {
       this.onDataReceivedCallback && this.onDataReceivedCallback();
     });
@@ -40,14 +70,15 @@ var IssueList = React.createClass({
   },
 
   handleIssueClick: function(issue) {
-    utils.pushState('#/issues/' + issue.props.id);
+    history.pushState('#/issues/' + issue.props.id);
     this.setState({ currentIssue: issue });
   },
 
-  handleBackClick: function() {
-    utils.pushState('#/issues');
+  handleBackClick: function(e) {
+    history.pushState('#/issues');
     this.setState({ currentIssue: null });
-    return false;
+
+    e.preventDefault();
   },
 
   render: function() {
@@ -55,8 +86,9 @@ var IssueList = React.createClass({
       return (
         <Issue {...issue}
             ref={ 'issue-' + issue.id }
+            key={ issue.id }
             currentIssue={ this.state.currentIssue }
-            handleClick={ this.handleIssueClick.bind(this) } />
+            handleClick={ this.handleIssueClick } />
       );
     }, this);
 

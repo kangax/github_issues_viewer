@@ -7,7 +7,7 @@ var IssueCommentList = React.createClass({
 
   propTypes: {
     comments: React.PropTypes.array,
-    isActive: React.PropTypes.function
+    isActive: React.PropTypes.func
   },
 
   shouldDisplayComments: function() {
@@ -17,7 +17,7 @@ var IssueCommentList = React.createClass({
   render: function() {
     function createComment(comment) {
       return (
-        <li className="issue__comment">
+        <li className="issue__comment" key={ comment.id }>
           <div className="issue__comment__header">
             <img className="issues__item__user-avatar" src={ comment.user.avatar_url } />
             <a href={ comment.user.html_url } className="issues__item__author">

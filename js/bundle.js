@@ -173,8 +173,8 @@ var IssueList = React.createClass({
   displayName: 'IssueList',
 
   propTypes: {
-    url: React.PropTypes.string,
-    currentPage: React.PropTypes.number
+    currentPage: React.PropTypes.number,
+    url: React.PropTypes.string
   },
 
   getInitialState: function() {
@@ -290,7 +290,7 @@ var IssueList = React.createClass({
       var pageNum = this.state[name + 'Page'].match(/&page=(\d+)/)[1];
 
       pages.push(
-        React.createElement("li", {className: "issues-pagination__page"}, 
+        React.createElement("li", {className: "issues-pagination__page", key:  pageNum + name}, 
           React.createElement("a", {href: "#", onClick:  this.handlePageClick.bind(this, pageNum) }, 
              name 
           )
@@ -301,7 +301,8 @@ var IssueList = React.createClass({
     ['first', 'prev'].forEach(createPage.bind(this));
 
     pages.push(
-      React.createElement("li", {className: "issues-pagination__page issues-pagination__page--current"}, 
+      React.createElement("li", {className: "issues-pagination__page issues-pagination__page--current", 
+          key:  this.state.currentPage}, 
         React.createElement("a", {href: "#"},  this.state.currentPage)
       )
     );

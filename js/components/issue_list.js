@@ -126,7 +126,7 @@ var IssueList = React.createClass({
       var pageNum = this.state[name + 'Page'].match(/&page=(\d+)/)[1];
 
       pages.push(
-        <li className="issues-pagination__page">
+        <li className="issues-pagination__page" key={ pageNum + name }>
           <a href="#" onClick={ this.handlePageClick.bind(this, pageNum) }>
             { name }
           </a>
@@ -137,7 +137,8 @@ var IssueList = React.createClass({
     ['first', 'prev'].forEach(createPage.bind(this));
 
     pages.push(
-      <li className="issues-pagination__page issues-pagination__page--current">
+      <li className="issues-pagination__page issues-pagination__page--current"
+          key={ this.state.currentPage }>
         <a href="#">{ this.state.currentPage }</a>
       </li>
     );

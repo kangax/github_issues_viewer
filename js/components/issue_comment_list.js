@@ -16,6 +16,15 @@ var IssueCommentList = React.createClass({
 
   render: function() {
     function createComment(comment) {
+
+      var parsedComment = marked(comment.body, { sanitize: true });
+
+      parsedComment = parsedComment.replace(/@[^\s]*/g, function(match) {
+        return '<a href="http://github.com/' + match.slice(1) + '">' +
+                  match +
+               '</a>';
+      });
+
       return (
         <li className="issue__comment" key={ comment.id }>
           <div className="issue__comment__header">
@@ -26,7 +35,7 @@ var IssueCommentList = React.createClass({
             said:
           </div>
           <div className="issue__comment__body"
-               dangerouslySetInnerHTML={ { __html: marked(comment.body, { sanitize: true }) } } />
+               dangerouslySetInnerHTML={ { __html: parsedComment } } />
         </li>
       );
     }

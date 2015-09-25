@@ -130,6 +130,15 @@ var IssueCommentList = React.createClass({
 
   render: function() {
     function createComment(comment) {
+
+      var parsedComment = marked(comment.body, { sanitize: true });
+
+      parsedComment = parsedComment.replace(/@[^\s]*/g, function(match) {
+        return '<a href="http://github.com/' + match.slice(1) + '">' +
+                  match +
+               '</a>';
+      });
+
       return (
         React.createElement("li", {className: "issue__comment", key:  comment.id}, 
           React.createElement("div", {className: "issue__comment__header"}, 
@@ -140,7 +149,7 @@ var IssueCommentList = React.createClass({
             "said:"
           ), 
           React.createElement("div", {className: "issue__comment__body", 
-               dangerouslySetInnerHTML:  { __html: marked(comment.body, { sanitize: true })} })
+               dangerouslySetInnerHTML:  { __html: parsedComment} })
         )
       );
     }
@@ -322,10 +331,12 @@ var IssueList = React.createClass({
           onClick:  this.handleBackClick}, 
             React.createElement("a", {href: "#"}, "← Back to issues")
         ), 
-        React.createElement("ul", {
-          className: "issues-pagination", 
-          style:  {'display': this.state.currentIssue ? 'none' : ''} }, 
-           this.getListOfPagesComponents() 
+        React.createElement("nav", null, 
+          React.createElement("ul", {
+            className: "issues-pagination", 
+            style:  {'display': this.state.currentIssue ? 'none' : ''} }, 
+             this.getListOfPagesComponents() 
+          )
         ), 
         React.createElement("div", {className: "loading-indicator"}), 
         React.createElement("ul", {className: "issues"}, 

@@ -158,11 +158,13 @@ var IssueList = React.createClass({
           onClick={ this.handleBackClick }>
             <a href="#">← Back to issues</a>
         </div>
-        <ul
-          className="issues-pagination"
-          style={ {'display': this.state.currentIssue ? 'none' : ''} }>
-          { this.getListOfPagesComponents() }
-        </ul>
+        <nav>
+          <ul
+            className="issues-pagination"
+            style={ {'display': this.state.currentIssue ? 'none' : ''} }>
+            { this.getListOfPagesComponents() }
+          </ul>
+        </nav>
         <div className="loading-indicator"></div>
         <ul className="issues">
           { this.getListOfIssueComponents() }

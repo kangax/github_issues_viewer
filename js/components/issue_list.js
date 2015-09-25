@@ -9,58 +9,72 @@ var IssueList = React.createClass({
   displayName: 'IssueList',
 
   propTypes: {
+    currentPage: React.PropTypes.number,
     url: React.PropTypes.string
   },
 
   getInitialState: function() {
     return {
       issues: [ ],
-      currentIssue: null
+      currentIssue: null,
+      // TODO: this is supposedly an antipattern but how else can we do it?
+      currentPage: this.props.currentPage || 1
     };
   },
 
   componentDidMount: function() {
+    this.fetchIssues();
+  },
+
+  fetchIssues: function() {
+
+    var $loadingIndicator = $(React.findDOMNode(this)).find('.loading-indicator');
+    $loadingIndicator.show();
+
     $.ajax({
-      url: this.props.url,
+      url: this.getCurrentUrl(),
       dataType: 'json',
       cache: false,
       success: this.onDataReceived,
-      error: this.onDataFailed
+      error: this.onDataFailed,
+      complete: function() {
+        $loadingIndicator.hide();
+      }
     });
+  },
+
+  getCurrentUrl: function() {
+    var perPage = 15;
+
+    return this.props.url +
+           '?per_page=' + perPage +
+           '&page=' + this.state.currentPage;
   },
 
   openIssue: function(issueId) {
     var issueToOpen = this.refs['issue-' + issueId];
     this.setState({ currentIssue: issueToOpen });
-    issueToOpen.fetchComments();
+    issueToOpen && issueToOpen.fetchComments();
   },
 
-  getUrlsOfNextAndLastPages: function(jqXHR) {
+  getPaginationData: function(jqXHR) {
+    // parse url out of '<https://...>; rel="next"', etc.
 
     var link = jqXHR.getResponseHeader('Link');
-    var pair = link.split(/\s*,\s*/);
-    var reUrl = /^\<([^\>]*)>.*/;
 
-    // parse url out of "<https://api.github.com/repositories/321278/issues?_=1443120446792&page=2>; rel="next""
-    if (/rel="next"/.test(pair[0])) {
-      return {
-        next: pair[0].replace(reUrl, '$1'),
-        last: pair[1].replace(reUrl, '$1')
-      };
-    }
-    else if (/rel="last"/.test(pair[0])) {
-      return {
-        last: pair[0].replace(reUrl, '$1'),
-        next: pair[1].replace(reUrl, '$1')
-      };
-    }
+    return {
+      nextPage: (link.match(/\<([^\>]*)>[^<]*?; rel="next"/) || {})[1],
+      lastPage: (link.match(/\<([^\>]*)>[^<]*?; rel="last"/) || {})[1],
+      firstPage: (link.match(/\<([^\>]*)>[^<]*?; rel="first"/) || {})[1],
+      prevPage: (link.match(/\<([^\>]*)>[^<]*?; rel="prev"/) || {})[1]
+    };
   },
 
   onDataReceived: function(data, status, jqXHR) {
-    var urls = this.getUrlsOfNextAndLastPages(jqXHR);
-    console.log(urls.next, urls.last);
+    var newState = this.getPaginationData(jqXHR);
+    newState.issues = data;
 
-    this.setState({ issues: data }, function() {
+    this.setState(newState, function() {
       this.onDataReceivedCallback && this.onDataReceivedCallback();
     });
   },
@@ -75,14 +89,23 @@ var IssueList = React.createClass({
   },
 
   handleBackClick: function(e) {
-    history.pushState('#/issues');
+    history.pushState('#/issues?page=' + this.state.currentPage);
     this.setState({ currentIssue: null });
 
     e.preventDefault();
   },
 
-  render: function() {
-    var issues = this.state.issues.map(function(issue) {
+  handlePageClick: function(i, e) {
+    history.pushState('#/issues?page=' + i);
+    this.setState({ currentPage: i, issues: [ ] }, function() {
+      this.fetchIssues();
+    });
+
+    e.preventDefault();
+  },
+
+  getListOfIssueComponents: function() {
+    return this.state.issues.map(function(issue) {
       return (
         <Issue {...issue}
             ref={ 'issue-' + issue.id }
@@ -91,7 +114,40 @@ var IssueList = React.createClass({
             handleClick={ this.handleIssueClick } />
       );
     }, this);
+  },
 
+  getListOfPagesComponents: function() {
+    var pages = [ ];
+
+    function createPage(name) {
+
+      if (!this.state[name + 'Page']) return;
+
+      var pageNum = this.state[name + 'Page'].match(/&page=(\d+)/)[1];
+
+      pages.push(
+        <li className="issues-pagination__page">
+          <a href="#" onClick={ this.handlePageClick.bind(this, pageNum) }>
+            { name }
+          </a>
+        </li>
+      );
+    }
+
+    ['first', 'prev'].forEach(createPage.bind(this));
+
+    pages.push(
+      <li className="issues-pagination__page issues-pagination__page--current">
+        <a href="#">{ this.state.currentPage }</a>
+      </li>
+    );
+
+    ['next', 'last'].forEach(createPage.bind(this));
+
+    return pages;
+  },
+
+  render: function() {
     return (
       <div className="global-wrapper">
         <h2 className="issues-header">Issues viewer</h2>
@@ -101,10 +157,14 @@ var IssueList = React.createClass({
           onClick={ this.handleBackClick }>
             <a href="#">← Back to issues</a>
         </div>
-        <div className="loading-indicator"
-             style={ { display: this.state.issues.length > 0 ? 'none' : '' } }></div>
+        <ul
+          className="issues-pagination"
+          style={ {'display': this.state.currentIssue ? 'none' : ''} }>
+          { this.getListOfPagesComponents() }
+        </ul>
+        <div className="loading-indicator"></div>
         <ul className="issues">
-          { issues }
+          { this.getListOfIssueComponents() }
         </ul>
       </div>
     );

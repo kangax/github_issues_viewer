@@ -173,58 +173,72 @@ var IssueList = React.createClass({
   displayName: 'IssueList',
 
   propTypes: {
-    url: React.PropTypes.string
+    url: React.PropTypes.string,
+    currentPage: React.PropTypes.number
   },
 
   getInitialState: function() {
     return {
       issues: [ ],
-      currentIssue: null
+      currentIssue: null,
+      // TODO: this is supposedly an antipattern but how else can we do it?
+      currentPage: this.props.currentPage || 1
     };
   },
 
   componentDidMount: function() {
+    this.fetchIssues();
+  },
+
+  fetchIssues: function() {
+
+    var $loadingIndicator = $(React.findDOMNode(this)).find('.loading-indicator');
+    $loadingIndicator.show();
+
     $.ajax({
-      url: this.props.url,
+      url: this.getCurrentUrl(),
       dataType: 'json',
       cache: false,
       success: this.onDataReceived,
-      error: this.onDataFailed
+      error: this.onDataFailed,
+      complete: function() {
+        $loadingIndicator.hide();
+      }
     });
+  },
+
+  getCurrentUrl: function() {
+    var perPage = 15;
+
+    return this.props.url +
+           '?per_page=' + perPage +
+           '&page=' + this.state.currentPage;
   },
 
   openIssue: function(issueId) {
     var issueToOpen = this.refs['issue-' + issueId];
     this.setState({ currentIssue: issueToOpen });
-    issueToOpen.fetchComments();
+    issueToOpen && issueToOpen.fetchComments();
   },
 
-  getUrlsOfNextAndLastPages: function(jqXHR) {
+  getPaginationData: function(jqXHR) {
+    // parse url out of '<https://...>; rel="next"', etc.
 
     var link = jqXHR.getResponseHeader('Link');
-    var pair = link.split(/\s*,\s*/);
-    var reUrl = /^\<([^\>]*)>.*/;
 
-    // parse url out of "<https://api.github.com/repositories/321278/issues?_=1443120446792&page=2>; rel="next""
-    if (/rel="next"/.test(pair[0])) {
-      return {
-        next: pair[0].replace(reUrl, '$1'),
-        last: pair[1].replace(reUrl, '$1')
-      };
-    }
-    else if (/rel="last"/.test(pair[0])) {
-      return {
-        last: pair[0].replace(reUrl, '$1'),
-        next: pair[1].replace(reUrl, '$1')
-      };
-    }
+    return {
+      nextPage: (link.match(/\<([^\>]*)>[^<]*?; rel="next"/) || {})[1],
+      lastPage: (link.match(/\<([^\>]*)>[^<]*?; rel="last"/) || {})[1],
+      firstPage: (link.match(/\<([^\>]*)>[^<]*?; rel="first"/) || {})[1],
+      prevPage: (link.match(/\<([^\>]*)>[^<]*?; rel="prev"/) || {})[1]
+    };
   },
 
   onDataReceived: function(data, status, jqXHR) {
-    var urls = this.getUrlsOfNextAndLastPages(jqXHR);
-    console.log(urls.next, urls.last);
+    var newState = this.getPaginationData(jqXHR);
+    newState.issues = data;
 
-    this.setState({ issues: data }, function() {
+    this.setState(newState, function() {
       this.onDataReceivedCallback && this.onDataReceivedCallback();
     });
   },
@@ -239,14 +253,23 @@ var IssueList = React.createClass({
   },
 
   handleBackClick: function(e) {
-    history.pushState('#/issues');
+    history.pushState('#/issues?page=' + this.state.currentPage);
     this.setState({ currentIssue: null });
 
     e.preventDefault();
   },
 
-  render: function() {
-    var issues = this.state.issues.map(function(issue) {
+  handlePageClick: function(i, e) {
+    history.pushState('#/issues?page=' + i);
+    this.setState({ currentPage: i, issues: [ ] }, function() {
+      this.fetchIssues();
+    });
+
+    e.preventDefault();
+  },
+
+  getListOfIssueComponents: function() {
+    return this.state.issues.map(function(issue) {
       return (
         React.createElement(Issue, React.__spread({},  issue, 
             {ref:  'issue-' + issue.id, 
@@ -255,7 +278,40 @@ var IssueList = React.createClass({
             handleClick:  this.handleIssueClick}))
       );
     }, this);
+  },
 
+  getListOfPagesComponents: function() {
+    var pages = [ ];
+
+    function createPage(name) {
+
+      if (!this.state[name + 'Page']) return;
+
+      var pageNum = this.state[name + 'Page'].match(/&page=(\d+)/)[1];
+
+      pages.push(
+        React.createElement("li", {className: "issues-pagination__page"}, 
+          React.createElement("a", {href: "#", onClick:  this.handlePageClick.bind(this, pageNum) }, 
+             name 
+          )
+        )
+      );
+    }
+
+    ['first', 'prev'].forEach(createPage.bind(this));
+
+    pages.push(
+      React.createElement("li", {className: "issues-pagination__page issues-pagination__page--current"}, 
+        React.createElement("a", {href: "#"},  this.state.currentPage)
+      )
+    );
+
+    ['next', 'last'].forEach(createPage.bind(this));
+
+    return pages;
+  },
+
+  render: function() {
     return (
       React.createElement("div", {className: "global-wrapper"}, 
         React.createElement("h2", {className: "issues-header"}, "Issues viewer"), 
@@ -265,10 +321,14 @@ var IssueList = React.createClass({
           onClick:  this.handleBackClick}, 
             React.createElement("a", {href: "#"}, "← Back to issues")
         ), 
-        React.createElement("div", {className: "loading-indicator", 
-             style:  { display: this.state.issues.length > 0 ? 'none' : ''} }), 
+        React.createElement("ul", {
+          className: "issues-pagination", 
+          style:  {'display': this.state.currentIssue ? 'none' : ''} }, 
+           this.getListOfPagesComponents() 
+        ), 
+        React.createElement("div", {className: "loading-indicator"}), 
         React.createElement("ul", {className: "issues"}, 
-           issues 
+           this.getListOfIssueComponents() 
         )
       )
     );
@@ -316,10 +376,14 @@ var IssueList = require('./components/issue_list.js');
 
 $(function() {
 
-  var issuesPerPage = 15;
-  var url = 'https://api.github.com/repos/npm/npm/issues?per_page=' + issuesPerPage;
+  var currentPage = parseInt(
+    (document.location.hash.match(/\?page=(\d+)/) || {})[1] || 1, 10);
 
-  var issueList = React.render(React.createElement(IssueList, {url:  url }), document.body);
+  var issueList = React.render(
+    React.createElement(IssueList, {
+      url: "https://api.github.com/repos/npm/npm/issues", 
+      currentPage:  currentPage }),
+    document.body);
 
   router.init(issueList);
 });
@@ -338,17 +402,24 @@ var router = {
   },
 
   onChange: function() {
-    if (document.location.hash === '#/issues') {
-      this.showAllIssues();
-    }
-    else if (document.location.hash.match(/#\/issues\/(\d+)/)) {
+    if (document.location.hash.match(/#\/issues\/(\d+)/)) {
       var issueId = RegExp.$1;
       this.openIssue(issueId);
     }
+    else {
+      var pageInUrl = (document.location.hash.match(/\?page=(\d+)/) || {})[1] || 1;
+      this.showAllIssues(pageInUrl);
+    }
   },
 
-  showAllIssues: function() {
-    this.issueList.setState({ currentIssue: null });
+  showAllIssues: function(currentPage) {
+    this.issueList.setState({
+      issues: [],
+      currentIssue: null,
+      currentPage: currentPage
+    }, function() {
+      this.fetchIssues();
+    });
   },
 
   openIssue: function(issueId) {

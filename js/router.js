@@ -11,17 +11,24 @@ var router = {
   },
 
   onChange: function() {
-    if (document.location.hash === '#/issues') {
-      this.showAllIssues();
-    }
-    else if (document.location.hash.match(/#\/issues\/(\d+)/)) {
+    if (document.location.hash.match(/#\/issues\/(\d+)/)) {
       var issueId = RegExp.$1;
       this.openIssue(issueId);
     }
+    else {
+      var pageInUrl = (document.location.hash.match(/\?page=(\d+)/) || {})[1] || 1;
+      this.showAllIssues(pageInUrl);
+    }
   },
 
-  showAllIssues: function() {
-    this.issueList.setState({ currentIssue: null });
+  showAllIssues: function(currentPage) {
+    this.issueList.setState({
+      issues: [],
+      currentIssue: null,
+      currentPage: currentPage
+    }, function() {
+      this.fetchIssues();
+    });
   },
 
   openIssue: function(issueId) {
